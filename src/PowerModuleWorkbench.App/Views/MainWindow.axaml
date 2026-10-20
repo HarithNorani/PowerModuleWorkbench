@@ -1,0 +1,221 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PowerModuleWorkbench.App.ViewModels"
+        xmlns:oxy="clr-namespace:OxyPlot.Avalonia;assembly=OxyPlot.Avalonia"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DesignWidth="1100"
+        d:DesignHeight="900"
+        x:Class="PowerModuleWorkbench.App.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Icon="/Assets/avalonia-logo.ico"
+        Title="PowerModule Workbench">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="*,*" Margin="32">
+            <StackPanel Grid.ColumnSpan="2" Spacing="6">
+                <TextBlock Text="PowerModule Workbench"
+                           FontSize="28"
+                           FontWeight="SemiBold"/>
+                <TextBlock Text="Configure a simplified power module and estimate its electrical and thermal performance."
+                           Opacity="0.75"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+
+            <Border Grid.Row="1"
+                    Grid.Column="0"
+                    Margin="0,24,16,0"
+                    Padding="20"
+                    CornerRadius="8"
+                    Background="{DynamicResource SystemControlHighlightAltListLowBrush}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Module configuration"
+                               FontSize="20"
+                               FontWeight="SemiBold"/>
+                    <Grid ColumnDefinitions="*,110" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                          RowSpacing="10">
+                        <TextBlock Grid.Row="0" VerticalAlignment="Center" Text="DC-link voltage"/>
+                        <TextBox Grid.Row="0" Grid.Column="1" AutomationProperties.Name="DC-link voltage in volts" Text="{Binding DcLinkVoltageV, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="1" VerticalAlignment="Center" Text="Output power"/>
+                        <TextBox Grid.Row="1" Grid.Column="1" AutomationProperties.Name="Output power in watts" Text="{Binding OutputPowerW, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="2" VerticalAlignment="Center" Text="Switching frequency"/>
+                        <TextBox Grid.Row="2" Grid.Column="1" AutomationProperties.Name="Switching frequency in hertz" Text="{Binding SwitchingFrequencyHz, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="3" VerticalAlignment="Center" Text="Ambient temperature"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" AutomationProperties.Name="Ambient temperature in degrees Celsius" Text="{Binding AmbientTemperatureC, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="4" VerticalAlignment="Center" Text="Thermal resistance"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" AutomationProperties.Name="Thermal resistance in degrees Celsius per watt" Text="{Binding ThermalResistanceCPerW, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="5" VerticalAlignment="Center" Text="Conduction resistance"/>
+                        <TextBox Grid.Row="5" Grid.Column="1" AutomationProperties.Name="Conduction resistance in ohms" Text="{Binding ConductionResistanceOhm, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="6" VerticalAlignment="Center" Text="Switching energy"/>
+                        <TextBox Grid.Row="6" Grid.Column="1" AutomationProperties.Name="Switching energy in joules" Text="{Binding SwitchingEnergyJ, UpdateSourceTrigger=PropertyChanged}"/>
+                        <TextBlock Grid.Row="7" VerticalAlignment="Center" Text="Maximum junction temperature"/>
+                        <TextBox Grid.Row="7" Grid.Column="1" AutomationProperties.Name="Maximum junction temperature in degrees Celsius" Text="{Binding MaximumJunctionTemperatureC, UpdateSourceTrigger=PropertyChanged}"/>
+                    </Grid>
+                    <TextBlock Text="Units: V, W, Hz, °C, °C/W, Ω, J, °C"
+                               FontSize="12"
+                               Opacity="0.65"/>
+                    <Button Content="Calculate"
+                            AutomationProperties.Name="Calculate module performance"
+                            Command="{Binding CalculateCommand}"
+                            HorizontalAlignment="Left"
+                            Padding="24,10"/>
+                    <Grid RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                        <TextBlock Grid.Row="0" Text="Project file" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="1"
+                                 AutomationProperties.Name="Project JSON file path"
+                                 Text="{Binding ProjectFilePath, UpdateSourceTrigger=PropertyChanged}"/>
+                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8">
+                            <Button Content="Save project" AutomationProperties.Name="Save project JSON file" Command="{Binding SaveProjectCommand}"/>
+                            <Button Content="Load project" AutomationProperties.Name="Load project JSON file" Command="{Binding LoadProjectCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                    <Border IsVisible="{Binding HasValidationMessage}"
+                            Padding="12"
+                            CornerRadius="4"
+                            Background="#33D32F2F">
+                        <TextBlock Text="{Binding ValidationMessage}"
+                                   TextWrapping="Wrap"
+                                   Foreground="#FFD32F2F"/>
+                    </Border>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="1"
+                    Grid.Column="1"
+                    Margin="16,24,0,0"
+                    Padding="20"
+                    CornerRadius="8"
+                    Background="{DynamicResource SystemControlHighlightAltListLowBrush}">
+                <StackPanel Spacing="14">
+                    <TextBlock Text="Analysis results"
+                               FontSize="20"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Enter valid inputs and select Calculate to update the estimate."
+                               IsVisible="{Binding !HasResult}"
+                               Opacity="0.7"
+                               TextWrapping="Wrap"/>
+                    <Grid IsVisible="{Binding HasResult}"
+                          ColumnDefinitions="*,*"
+                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          RowSpacing="16"
+                          ColumnSpacing="16">
+                        <StackPanel Grid.Row="0" Grid.Column="0">
+                            <TextBlock Text="RMS current" Opacity="0.7"/>
+                            <TextBlock Text="{Binding EstimatedRmsCurrentA}" FontSize="20"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="0" Grid.Column="1">
+                            <TextBlock Text="Efficiency" Opacity="0.7"/>
+                            <TextBlock Text="{Binding EfficiencyPercent}" FontSize="20"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="0">
+                            <TextBlock Text="Conduction loss" Opacity="0.7"/>
+                            <TextBlock Text="{Binding ConductionLossW}" FontSize="20"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1" Grid.Column="1">
+                            <TextBlock Text="Switching loss" Opacity="0.7"/>
+                            <TextBlock Text="{Binding SwitchingLossW}" FontSize="20"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="0">
+                            <TextBlock Text="Total loss" Opacity="0.7"/>
+                            <TextBlock Text="{Binding TotalLossW}" FontSize="20"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" Grid.Column="1">
+                            <TextBlock Text="Junction temperature" Opacity="0.7"/>
+                            <TextBlock Text="{Binding EstimatedJunctionTemperatureC}" FontSize="20"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="3" Grid.Column="0">
+                            <TextBlock Text="Thermal margin" Opacity="0.7"/>
+                            <TextBlock Text="{Binding ThermalMarginC}" FontSize="20"/>
+                        </StackPanel>
+                        <TextBlock Grid.Row="3" Grid.Column="1"
+                                   Text="{Binding ThermalStatus}"
+                                   VerticalAlignment="Bottom"
+                                   TextWrapping="Wrap"
+                                   FontWeight="SemiBold"/>
+                    </Grid>
+                    <Grid IsVisible="{Binding HasResult}"
+                          RowDefinitions="Auto,Auto"
+                          ColumnDefinitions="*,Auto"
+                          RowSpacing="8">
+                        <TextBlock Grid.Row="0"
+                                   Grid.ColumnSpan="2"
+                                   Text="Export results"
+                                   FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="1"
+                                 AutomationProperties.Name="CSV export file path"
+                                 Text="{Binding ExportFilePath, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Grid.Row="1"
+                                Grid.Column="1"
+                                Content="Export CSV"
+                                AutomationProperties.Name="Export results as CSV"
+                                Command="{Binding ExportResultsCommand}"
+                                Margin="8,0,0,0"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="2"
+                    Grid.ColumnSpan="2"
+                    Margin="0,24,0,0"
+                    Padding="20"
+                    CornerRadius="8"
+                    Background="{DynamicResource SystemControlHighlightAltListLowBrush}"
+                    IsVisible="{Binding HasResult}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Operating-point analysis"
+                               FontSize="20"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="The chart varies output power from 50% to 150% of the configured value while keeping the other inputs constant."
+                               Opacity="0.7"
+                               TextWrapping="Wrap"/>
+                    <oxy:PlotView Model="{Binding LossChart}"
+                                  Height="300"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Row="3"
+                    Grid.ColumnSpan="2"
+                    Margin="0,24,0,0"
+                    Padding="20"
+                    CornerRadius="8"
+                    Background="{DynamicResource SystemControlHighlightAltListLowBrush}">
+                <StackPanel Spacing="10">
+                    <TextBlock Text="Configuration comparison"
+                               FontSize="20"
+                               FontWeight="SemiBold"/>
+                    <TextBlock Text="Compare the project file above with a second saved configuration."
+                               Opacity="0.7"
+                               TextWrapping="Wrap"/>
+                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto" RowSpacing="8">
+                        <TextBlock Grid.Row="0" Text="Configuration B project file" FontWeight="SemiBold"/>
+                        <TextBox Grid.Row="1"
+                                 Text="{Binding ComparisonProjectFilePath, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button Grid.Row="2"
+                                Content="Compare projects"
+                                Command="{Binding CompareProjectsCommand}"
+                                HorizontalAlignment="Left"/>
+                    </Grid>
+                    <Border IsVisible="{Binding HasComparison}"
+                            Padding="12"
+                            CornerRadius="4"
+                            Background="{DynamicResource SystemControlHighlightAltListLowBrush}">
+                        <StackPanel Spacing="8">
+                            <TextBlock Text="{Binding ComparisonSummary}"
+                                       FontWeight="SemiBold"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding ComparisonMetrics}"
+                                       TextWrapping="Wrap"/>
+                            <oxy:PlotView Model="{Binding SensitivityChart}"
+                                          Height="260"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </Border>
+        </Grid>
+    </ScrollViewer>
+</Window>

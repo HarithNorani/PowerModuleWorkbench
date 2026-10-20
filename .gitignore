@@ -1,0 +1,16 @@
+# .NET build output
+bin/
+obj/
+
+# IDE files
+.vs/
+.idea/
+*.user
+*.suo
+
+# Test and coverage output
+TestResults/
+coverage/
+
+# OS files
+.DS_Store
